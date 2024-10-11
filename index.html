@@ -32,7 +32,7 @@
 
       // List of categories with better formatting
       const categories = Object.keys(data[0])
-        .filter(d => d !== "Gender")
+        .filter(d => d !== "Gender" && d !== "SpendingCelebrating")
         .map(d => d.replace(/([a-z])([A-Z])/g, '$1 $2'));  // Adds space between words
 
       // Reshape data for easier handling
