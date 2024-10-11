@@ -16,8 +16,15 @@
     const g = svg.append("g")
       .attr("transform", `translate(${margin.left},${margin.top})`);
 
-    const blue = "#456990"
-    const pink = "#F6828C"
+    const title = svg.append("g").attr("transform", `translate(${width / 2}, 0)`);
+    title.append("text").attr("x", 24)
+      .attr("y", 13)
+      .text("Spending on Valentines Day")
+      .style("font-size", "14px")
+      .attr("alignment-baseline", "middle");
+
+    const blue = "#456990";
+    const pink = "#F6828C";
 
     d3.csv("gifts_gender.csv").then((data) => {
       // List of subgroups (Men, Women)
@@ -59,15 +66,17 @@
         .domain(subgroups)
         .range([blue, pink]); // Blue for men, pink for women
 
-      // Draw bars
-      g.selectAll("g")
+      // Bind data and draw category groups
+      const categoryGroups = g.selectAll("g.category")
         .data(reshapedData)
-        .enter()
-        .append("g")
-        .attr("transform", d => `translate(0,${y(d.category)})`)
-        .selectAll("rect")
+        .join("g")
+        .attr("class", "category")
+        .attr("transform", d => `translate(0,${y(d.category)})`);
+
+      // Bind subgroups data and draw bars
+      categoryGroups.selectAll("rect")
         .data(d => subgroups.map(key => ({ key: key, value: d[key] })))
-        .enter().append("rect")
+        .join("rect")
         .attr("x", 0)
         .attr("y", d => ySubgroup(d.key))
         .attr("width", d => x(d.value))
@@ -84,7 +93,7 @@
         .attr("text-anchor", "end")
         .attr("x", width / 2)
         .attr("y", height + margin.bottom - 10)
-        .text("Spending (% spending)")
+        .text("Spending ($)")
         .style("font-size", "14px");
 
       // Add y-axis
