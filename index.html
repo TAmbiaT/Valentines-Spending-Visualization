@@ -29,11 +29,11 @@
         .map(d => d.replace(/([a-z])([A-Z])/g, '$1 $2'));  // Adds space between words
 
       // Reshape data for easier handling
-      const reshapedData = categories.map((category) => {
+      const reshapedData = categories.map((category, i) => {
         return {
           category: category,
-          Men: +data[0][category],
-          Women: +data[1][category]
+          Men: +data[0][Object.keys(data[0])[i + 1]],
+          Women: +data[1][Object.keys(data[1])[i + 1]]
         };
       });
 
@@ -57,17 +57,17 @@
       // Create color scale
       const color = d3.scaleOrdinal()
         .domain(subgroups)
-        .range([blue, pink]); // Blue for men, pink for women
+        .range([blue, pink]); // Blue for men, orange for women
 
       // Draw bars
       g.selectAll("g")
         .data(reshapedData)
-        .join()
+        .enter()
         .append("g")
         .attr("transform", d => `translate(0,${y(d.category)})`)
         .selectAll("rect")
         .data(d => subgroups.map(key => ({ key: key, value: d[key] })))
-        .join().append("rect")
+        .enter().append("rect")
         .attr("x", 0)
         .attr("y", d => ySubgroup(d.key))
         .attr("width", d => x(d.value))
@@ -84,7 +84,7 @@
         .attr("text-anchor", "end")
         .attr("x", width / 2)
         .attr("y", height + margin.bottom - 10)
-        .text("Spending (% per person)")
+        .text("Spending (% of spending)")
         .style("font-size", "14px");
 
       // Add y-axis
