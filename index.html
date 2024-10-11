@@ -4,6 +4,133 @@
   <script src="https://d3js.org/d3.v7.min.js"></script>
 </head>
 
-<body></body>
+<body>
+  <svg id="g1" width="800" height="400"></svg>
+
+  <script>
+    const svg = d3.select("svg#g1"),
+      margin = { top: 20, right: 120, bottom: 60, left: 150 },
+      width = +svg.attr("width") - margin.left - margin.right,
+      height = +svg.attr("height") - margin.top - margin.bottom;
+
+    const g = svg.append("g")
+      .attr("transform", `translate(${margin.left},${margin.top})`);
+
+    const blue = "#456990"
+    const pink = "#F6828C"
+
+    d3.csv("gifts_gender.csv").then((data) => {
+      // List of subgroups (Men, Women)
+      const subgroups = ["Men", "Women"];
+
+      // List of categories with better formatting
+      const categories = Object.keys(data[0])
+        .filter(d => d !== "Gender")
+        .map(d => d.replace(/([a-z])([A-Z])/g, '$1 $2'));  // Adds space between words
+
+      // Reshape data for easier handling
+      const reshapedData = categories.map((category) => {
+        return {
+          category: category,
+          Men: +data[0][category],
+          Women: +data[1][category]
+        };
+      });
+
+      // Create x scale
+      const x = d3.scaleLinear()
+        .domain([0, d3.max(reshapedData, d => Math.max(d.Men, d.Women))])
+        .range([0, width]);
+
+      // Create y scale
+      const y = d3.scaleBand()
+        .domain(categories)
+        .range([0, height])
+        .padding([0.2]);
+
+      // Create subgroups scale (for Men and Women bars)
+      const ySubgroup = d3.scaleBand()
+        .domain(subgroups)
+        .range([0, y.bandwidth()])
+        .padding([0.05]);
+
+      // Create color scale
+      const color = d3.scaleOrdinal()
+        .domain(subgroups)
+        .range([blue, pink]); // Blue for men, pink for women
+
+      // Draw bars
+      g.selectAll("g")
+        .data(reshapedData)
+        .enter()
+        .append("g")
+        .attr("transform", d => `translate(0,${y(d.category)})`)
+        .selectAll("rect")
+        .data(d => subgroups.map(key => ({ key: key, value: d[key] })))
+        .enter().append("rect")
+        .attr("x", 0)
+        .attr("y", d => ySubgroup(d.key))
+        .attr("width", d => x(d.value))
+        .attr("height", ySubgroup.bandwidth())
+        .attr("fill", d => color(d.key));
+
+      // Add x-axis
+      g.append("g")
+        .attr("transform", `translate(0,${height})`)
+        .call(d3.axisBottom(x));
+
+      // Add x-axis label
+      g.append("text")
+        .attr("text-anchor", "end")
+        .attr("x", width / 2)
+        .attr("y", height + margin.bottom - 10)
+        .text("Spending (% per person)")
+        .style("font-size", "14px");
+
+      // Add y-axis
+      g.append("g")
+        .call(d3.axisLeft(y));
+
+      // Add y-axis label
+      g.append("text")
+        .attr("text-anchor", "end")
+        .attr("x", -height / 2)
+        .attr("y", -margin.left + 40)
+        .attr("transform", "rotate(-90)")
+        .text("Categories")
+        .style("font-size", "14px");
+
+      // Add legend
+      const legend = svg.append("g")
+        .attr("transform", `translate(${width + margin.left + 20}, ${margin.top})`);
+
+      legend.append("rect")
+        .attr("x", 0)
+        .attr("y", 0)
+        .attr("width", 18)
+        .attr("height", 18)
+        .attr("fill", blue);
+      legend.append("text")
+        .attr("x", 24)
+        .attr("y", 13)
+        .text("Men")
+        .style("font-size", "14px")
+        .attr("alignment-baseline", "middle");
+
+      legend.append("rect")
+        .attr("x", 0)
+        .attr("y", 30)
+        .attr("width", 18)
+        .attr("height", 18)
+        .attr("fill", pink);
+      legend.append("text")
+        .attr("x", 24)
+        .attr("y", 43)
+        .text("Women")
+        .style("font-size", "14px")
+        .attr("alignment-baseline", "middle");
+    });
+  </script>
+</body>
 
 </html>
