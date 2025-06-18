@@ -64,5 +64,5 @@ Role: Data Analyst & D3 Developer
 
 ---
 ## 📌 Notes
-- This project was developed as part of an academic team assignment. While all code in the repository was written or co-written by me, the report and some ideas were collaboratively produced.
+- This project was developed as part of an academic team assignment. However, all code in this repository was written by me.
 - I intentionally chose not to deploy via GitHub Pages to reserve that for my portfolio site. This project is instead hosted via raw.githack.com for lightweight public viewing.
