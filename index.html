@@ -1,0 +1,432 @@
+<html>
+
+<head>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    body{padding-left: 30px; padding-top: 50px}
+    #graphs{flex-direction: column;}
+    svg{margin-top: 30px; padding-top: 30px; padding-bottom: 30px;}
+
+    .gridlines line {
+            stroke: #bbb;
+        }
+        .gridlines .domain {
+            stroke: none;
+        }
+        .legend {
+            font-size: 14px;
+            margin-left: 20px;
+        }
+        .legend rect {
+            width: 12px;
+            height: 12px;
+            stroke-width: 1;
+            stroke: #000;
+        }
+
+  </style>
+</head>
+
+<body>
+  <!-- Graphs Container -->
+  <div id="graphs">
+    <!-- Graph 1: Historical Spending by Category -->
+    <svg id="g1" width="840" height="400", style="background-color: rgba(255, 243, 243, 0.724);"></svg>
+    <!-- Graph 2: Gender Based Spending -->
+    <svg id="g2" width="840" height="400", style="background-color: rgba(255, 243, 243, 0.724);"></svg>
+    <!-- Graph 3: Age Based Spending -->
+    <svg id="g3" width="840" height="400", style="background-color: rgba(255, 243, 243, 0.724);"></svg>
+    <svg id="legend" width="840" height="50"></svg>
+
+    </svg>
+  </div>
+  
+
+  <!-- Graph 1 Script -->
+  <script>
+    // Set Constants
+    const svg1 = d3.select("svg#g1"),
+      g1_margin = { top: 30, right: 180, bottom: 60, left: 150 },
+      g1_width = +svg1.attr("width") - g1_margin.left - g1_margin.right,
+      g1_height = +svg1.attr("height") - g1_margin.top - g1_margin.bottom;
+
+    // Add title
+    const g1_title = svg1.append("g").attr("transform", `translate(${g1_width / 2}, 0)`);
+    g1_title.append("text").attr("x", 24)
+      .attr("y", 13)
+      .text("Historical Spending by Category")
+      .style("font-size", "18px")
+      .attr("alignment-baseline", "middle");
+  
+      // Load the data
+    d3.csv("historical_spending.csv").then(data => {
+        const categories = ["Candy", "Flowers", "Jewelry", "GreetingCards", "EveningOut", "Clothing", "GiftCards"];
+        const labels = ["Candy", "Flowers", "Jewelry", "Greeting Cards", "Evening Out", "Clothing", "Gift Cards"]; 
+
+        // Create SVG container
+        const g1 = svg1.append("g")
+                      .attr("transform", `translate(${g1_margin.left}, ${g1_margin.top})`);
+
+        // Create scales
+        const x = d3.scaleLinear()
+                    .range([0, g1_width])
+                    .domain(d3.extent(data, d => +d.Year));
+        
+        const y = d3.scaleLinear()
+                    .range([g1_height, 0])
+                    .domain([0, d3.max(data, d => d3.max(categories, category => +d[category]))]);      
+        
+        const colorScale = d3.scaleOrdinal(d3.schemeCategory10);
+
+        // Define line
+        const line = d3.line()
+                       .x(d => x(+d.Year))
+                       .y(d => y(+d.value));
+
+        // Add gridlines
+        g1.append("g")
+           .attr("class", "gridlines")
+           .call(d3.axisLeft(y).tickSize(-g1_width).tickFormat(''));
+
+        g1.append("g")
+        .attr("class", "gridlines")
+        .attr("transform", `translate(0,${g1_height})`)
+        .call(d3.axisBottom(x).tickSize(-g1_height).tickFormat(''));
+
+        // Add the lines
+        categories.forEach((category, index) => {
+          g1.append("path")
+               .data(data)  
+               .attr("class", "line")
+               .attr("d", line(data.map(d => ({ Year: +d.Year, value: +d[category] })))) // Use the original keys
+               .style("fill", "none")
+               .style("stroke", colorScale(index))
+               .style("stroke-width", 2);
+        });
+
+        // Add x-axis
+      g1.append("g")
+        .attr("transform", `translate(0,${g1_height})`)
+        .call(d3.axisBottom(x).tickFormat(d3.format("")));
+      // Add x-axis label
+      g1.append("text")
+        .attr("text-anchor", "end")
+        .attr("x", g1_width / 2)
+        .attr("y", g1_height + g1_margin.bottom - 10)
+        .text("Year")
+        .style("font-size", "14px");
+
+      // Add y-axis
+      g1.append("g")
+        .call(d3.axisLeft(y));
+
+      // Add y-axis label
+      g1.append("text")
+        .attr("text-anchor", "end")
+        .attr("x", -g1_height / 2)
+        .attr("y", -g1_margin.left + 60)
+        .attr("transform", "rotate(-90)")
+        .text("Spending ($)")
+        .style("font-size", "14px");
+
+        // Add a legend
+        const legend = g1.selectAll(".legend")
+                          .data(labels)
+                          .enter().append("g")
+                          .attr("class", "legend")
+                          .attr("transform", (d, i) => `translate(0, ${i * 25})`);
+
+        legend.append("rect")
+              .attr("x", g1_width + 30)
+              .attr("width", 12)
+              .attr("height", 12)
+              .style("fill", (d, i) => colorScale(i))
+              .style("stroke", "none");
+
+        legend.append("text")
+              .attr("x", g1_width + 50)
+              .attr("y", 10)
+              .text(d => d);
+
+   });
+
+     
+    </script>
+
+
+
+
+
+
+
+  <!-- Graph 2 Script -->
+  <script>
+    // Set Constants
+    const svg2 = d3.select("svg#g2"),
+      g2_margin = { top: 30, right: 120, bottom: 60, left: 150 },
+      g2_width = +svg2.attr("width") - g2_margin.left - g2_margin.right,
+      g2_height = +svg2.attr("height") - g2_margin.top - g2_margin.bottom,
+      blue = "#456990",
+      pink = "#F6828C";
+
+
+    // Position Graph 
+    const g2 = svg2.append("g")
+      .attr("transform", `translate(${g2_margin.left},${g2_margin.top})`);
+
+    // Add title
+    const title = svg2.append("g").attr("transform", `translate(${g2_width / 2}, 0)`);
+    title.append("text").attr("x", 24)
+      .attr("y", 13)
+      .text("Gender Based Spending on Valentines Day")
+      .style("font-size", "18px")
+      .attr("alignment-baseline", "middle");
+
+    // Load data
+    d3.csv("gifts_gender.csv").then((data) => {
+      // List of subgroups (Men, Women)
+      const subgroups = ["Men", "Women"];
+
+      // List of categories with better formatting
+      const categories = Object.keys(data[0])
+        .filter(d => d !== "Gender" && d !== "SpendingCelebrating")
+        .map(d => d.replace(/([a-z])([A-Z])/g, '$1 $2'));  // Adds space between words
+
+      // Reshape data for easier handling
+      const reshapedData = categories.map((category, i) => {
+        return {
+          category: category,
+          Men: +data[0][Object.keys(data[0])[i + 1]],
+          Women: +data[1][Object.keys(data[1])[i + 1]]
+        };
+      });
+
+      // Create x scale
+      const x = d3.scaleLinear()
+        .domain([0, d3.max(reshapedData, d => Math.max(d.Men, d.Women))])
+        .range([0, g2_width]);
+
+      // Create y scale
+      const y = d3.scaleBand()
+        .domain(categories)
+        .range([0, g2_height])
+        .padding([0.2]);
+
+      // Create subgroups scale (for Men and Women bars)
+      const ySubgroup = d3.scaleBand()
+        .domain(subgroups)
+        .range([0, y.bandwidth()])
+        .padding([0.05]);
+
+      // Create color scale
+      const color = d3.scaleOrdinal()
+        .domain(subgroups)
+        .range([blue, pink]); // Blue for men, pink for women
+
+      // Bind data and draw category groups
+      const categoryGroups = g2.selectAll("g.category")
+        .data(reshapedData)
+        .join("g")
+        .attr("class", "category")
+        .attr("transform", d => `translate(0,${y(d.category)})`);
+
+      // Bind subgroups data and draw bars
+      categoryGroups.selectAll("rect")
+        .data(d => subgroups.map(key => ({ key: key, value: d[key] })))
+        .join("rect")
+        .attr("x", 0)
+        .attr("y", d => ySubgroup(d.key))
+        .attr("width", d => x(d.value))
+        .attr("height", ySubgroup.bandwidth())
+        .attr("fill", d => color(d.key));
+
+      // Add x-axis
+      g2.append("g")
+        .attr("transform", `translate(0,${g2_height})`)
+        .call(d3.axisBottom(x));
+
+      // Add x-axis label
+      g2.append("text")
+        .attr("text-anchor", "end")
+        .attr("x", g2_width / 2)
+        .attr("y", g2_height + g2_margin.bottom - 10)
+        .text("Spending (% spending)")
+        .style("font-size", "14px");
+
+      // Add y-axis
+      g2.append("g")
+        .call(d3.axisLeft(y));
+
+      // Add y-axis label
+      g2.append("text")
+        .attr("text-anchor", "end")
+        .attr("x", -g2_height / 2)
+        .attr("y", -g2_margin.left + 40)
+        .attr("transform", "rotate(-90)")
+        .text("Categories")
+        .style("font-size", "14px");
+
+      // Add legend
+      const legend = svg2.append("g")
+        .attr("transform", `translate(${g2_width + g2_margin.left + 20}, ${g2_margin.top})`);
+
+      legend.append("rect")
+        .attr("x", 0)
+        .attr("y", 0)
+        .attr("width", 18)
+        .attr("height", 18)
+        .attr("fill", blue);
+      legend.append("text")
+        .attr("x", 24)
+        .attr("y", 13)
+        .text("Men")
+        .style("font-size", "14px")
+        .attr("alignment-baseline", "middle");
+
+      legend.append("rect")
+        .attr("x", 0)
+        .attr("y", 30)
+        .attr("width", 18)
+        .attr("height", 18)
+        .attr("fill", pink);
+      legend.append("text")
+        .attr("x", 24)
+        .attr("y", 43)
+        .text("Women")
+        .style("font-size", "14px")
+        .attr("alignment-baseline", "middle");
+    });
+  </script>
+
+  <!-- Script for Graph 3 -->
+  <script>
+    // Set Constants
+    const svg3 = d3.select("svg#g3"),
+      g3_margin = { top: 30, right: 120, bottom: 60, left: 150 },
+      g3_width = +svg3.attr("width") - g3_margin.left - g3_margin.right,
+      g3_height = +svg3.attr("height") - g3_margin.top - g3_margin.bottom;
+     
+      const g3 = svg3.append("g")
+                       .attr("transform", `translate(${g3_margin.left}, ${g3_margin.top})`);
+
+
+      const g3_title = svg3.append("g").attr("transform", `translate(${g3_width / 2}, 0)`);
+      g3_title.append("text").attr("x", 24)
+      .attr("y", 13)
+      .text("Age Based Spending on Valentines Day")
+      .style("font-size", "18px")
+      .attr("alignment-baseline", "middle");
+  
+      d3.csv("gifts_age.csv").then(data => {
+        const categories = ["Candy", "Flowers", "Jewelry", "GreetingCards", "EveningOut", "Clothing", "GiftCards"];
+        const labels = ["Candy", "Flowers", "Jewelry", "Greeting Cards", "Evening Out", "Clothing", "Gift Cards"];
+
+        const ageGroups = data.map(d => d.Age);
+
+        // Create scales
+        const x = d3.scaleBand()
+                    .range([0, g3_width])
+                    .domain(ageGroups)
+                    .padding(0.05); 
+
+        const y = d3.scaleBand()
+                    .range([g3_height, 0])
+                    .domain(categories)
+                    .padding(0.05); 
+
+        
+        const spendingValues = data.flatMap(d => categories.map(category => +d[category]));
+        const colorExtent = d3.extent(spendingValues);
+
+        const colorScale = d3.scaleSequential(d3.interpolatePuRd)
+                             .domain(colorExtent);  
+
+        // Add x-axis
+        g3.append("g")
+           .attr("class", "axis axis--x")
+           .attr("transform", `translate(0, ${g3_height})`)
+           .call(d3.axisBottom(x))
+           .append("text")
+           .attr("x", g3_width / 2)
+           .attr("y", g3_height + g3_margin.bottom)
+           .attr("text-anchor", "middle")
+           .text("Age Range")
+           .style("font-size", "14px")
+           .style("fill", "black");
+
+
+
+        // Add y-axis
+        g3.append("g")
+           .attr("class", "axis axis--y")
+           .call(d3.axisLeft(y))
+           .append("text")
+           .attr("transform", "rotate(-90)")
+           .attr("x", -g3_height / 2)
+           .attr("y", -g3_margin.left + 40)
+           .attr("text-anchor", "middle")
+           .text("Gift Categories")
+           .style("font-size", "14px")
+           .style("fill", "black");
+
+
+        // Add heatmap cells
+        g3.selectAll(".cell")
+           .data(data)
+           .enter().selectAll("rect")
+           .data(d => categories.map(category => ({
+               age: d.Age,
+               category: category,
+               value: +d[category]
+           })))
+           .enter().append("rect")
+           .attr("class", "cell")
+           .attr("x", d => x(d.age))
+           .attr("y", d => y(d.category))
+           .attr("width", x.bandwidth())
+           .attr("height", y.bandwidth())
+           .attr("fill", d => colorScale(d.value));
+
+           const legend = d3.select("#legend")
+                     .append("g")
+                     .attr("transform", "translate(20, 10)");
+
+    // Create a linear scale for the legend
+    const legendWidth = 500;
+    const legendX = d3.scaleLinear()
+                      .range([0, legendWidth])
+                      .domain(colorExtent);  
+
+    const legendSteps = 10;
+
+    legend.selectAll("rect")
+          .data(d3.range(colorExtent[0], colorExtent[1], (colorExtent[1] - colorExtent[0]) / legendSteps))
+          .enter().append("rect")
+          .attr("x", d => legendX(d))
+          .attr("y", 0)
+          .attr("width", legendWidth / legendSteps)
+          .attr("height", 10)
+          .style("fill", d => colorScale(d));
+
+    const legendAxis = d3.axisBottom(legendX)
+                         .ticks(legendSteps)
+                         .tickSize(13)
+                         .tickFormat(d3.format(".0f")); 
+
+    legend.call(legendAxis)
+          .attr("transform", `translate(0, 10)`);
+
+    legend.append("text")
+        .attr("x", (g3_width - 40) / 2)
+        .attr("y", 0)
+        .attr("text-anchor", "middle")
+        .text("Spending ($)")
+        .style("fill", "black");
+        
+      });
+
+
+  </script>
+</body>
+
+</html>
