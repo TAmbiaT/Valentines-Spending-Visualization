@@ -1,6 +1,6 @@
 # 💘 Valentine's Spending Visualization
 
-This project visualizes trends in Valentine's Day consumer spending using JavaScript and the [D3.js](https://d3js.org/) library. It was developed for an academic data visualization course to explore how spending varies by year, gender, and age group across different gift categories.
+This project visualizes trends in Valentine's Day consumer spending using JavaScript and the [D3.js](https://d3js.org/) library. It was developed as a data visualization exercise to explore how spending varies by year, gender, and age group across different gift categories.
 
 ## 📊 Visualizations
 
@@ -64,5 +64,4 @@ Role: Data Analyst & D3 Developer
 
 ---
 ## 📌 Notes
-- This project was developed as part of an academic team assignment. However, all code in this repository was written by me.
 - I intentionally chose not to deploy via GitHub Pages to reserve that for my portfolio site. This project is instead hosted via raw.githack.com for lightweight public viewing.
